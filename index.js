@@ -22,7 +22,7 @@ class PersistentCollection extends Collection {
         fs.mkdirSync("./data");
       }
     }
-    this.path = require("path").join(__dirname, this.dataDir, this.name);
+    this.path = require("path").join(process.cwd(), this.dataDir, this.name);
     console.log(this.path);
     this.db = levelup(this.path);
     this.init();
