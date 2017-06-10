@@ -8,6 +8,15 @@
   },
   "author": "Evelyne Lachance",
   "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/eslachance/djs-collection-persistent.git"
+  },
+  "bugs": {
+    "url": "https://github.com/eslachance/djs-collection-persistent/issues"
+  },
+  "homepage": "https://github.com/eslachance/djs-collection-persistent#readme"
+
   "dependencies": {
     "djs-collection": "0.0.5",
     "leveldown": "^1.7.2",
