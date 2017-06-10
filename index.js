@@ -1,5 +1,6 @@
 const Collection = require("djs-collection");
 const levelup = require('levelup');
+const path = require("path");
 
 /**
  * A persistent, disk-saved version of the Discord.js' Collections data structure.
@@ -22,7 +23,7 @@ class PersistentCollection extends Collection {
         fs.mkdirSync("./data");
       }
     }
-    this.path = require("path").join(process.cwd(), this.dataDir, this.name);
+    this.path = path.join(process.cwd(), this.dataDir, this.name);
     console.log(this.path);
     this.db = levelup(this.path);
     this.init();
@@ -33,7 +34,7 @@ class PersistentCollection extends Collection {
     stream.on('data', key => {
       this.db.get(key, (err, value) => {
         if(err) console.log(err);
-        this.set(key, value);
+        this.set(key, JSON.parse(value));
       });
     });
     stream.on('end', () => this.ready = true);
@@ -44,7 +45,9 @@ class PersistentCollection extends Collection {
   }
   
   set(key, val) {
-    this.db.put(key, val);
+    if(!key || key.constructor.name !== "String") 
+      throw new Error("Persistent Collections require keys to be strings.");
+    this.db.put(key, JSON.stringify(val));
     return super.set(key, val);
   }
 
