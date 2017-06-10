@@ -1,0 +1,16 @@
+{
+  "name": "djs-collection-persistent",
+  "version": "0.0.1",
+  "description": "Collections stored in persistent database.",
+  "main": "index.js",
+  "scripts": {
+    "test": "test.js"
+  },
+  "author": "Evelyne Lachance",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "djs-collection": "0.0.5",
+    "leveldown": "^1.7.2",
+    "levelup": "^1.3.8"
+  }
+}
