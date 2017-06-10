@@ -16,7 +16,15 @@ class PersistentCollection extends Collection {
     //todo: check for "unique" option for the DB name and exit if exists
     this._validateName();
     this.dataDir = (options.dataDir || "data");
-    this.db = levelup(require("path").join(__dirname, this.dataDir, this.name));
+    if(!options.dataDir) {
+      const fs = require("fs");
+      if (!fs.existsSync("./data")) {
+        fs.mkdirSync("./data");
+      }
+    }
+    this.path = require("path").join(__dirname, this.dataDir, this.name);
+    console.log(this.path);
+    this.db = levelup(this.path);
     this.init();
   }
   
@@ -45,19 +53,25 @@ class PersistentCollection extends Collection {
     return super.delete(key);
   }
   
-  deleteAll() {
+  async deleteAll() {
     const returns = [];
     const ops = [];
     for (const key of this.keys()) {
       returns.push(this.delete(key));
       ops.push({type: 'del', key});
     }
-    this.db.batch(ops);
+    await this._purge();
     return returns;
   }
   
-  purge() {
-    // todo: purge completely deletes the DB using FS
+  _purge() {
+    return new Promise((resolve, reject) => {
+      require("levelup").destroy(this.path, (err) => {
+        if(err) return reject(err);
+        this.db = levelup(this.path);
+        resolve();
+      });
+    });
   }
 }
 
