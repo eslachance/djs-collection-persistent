@@ -1,6 +1,6 @@
 {
   "name": "djs-collection-persistent",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Collections stored in persistent database.",
   "main": "index.js",
   "scripts": {
@@ -16,7 +16,6 @@
     "url": "https://github.com/eslachance/djs-collection-persistent/issues"
   },
   "homepage": "https://github.com/eslachance/djs-collection-persistent#readme",
-
   "dependencies": {
     "djs-collection": "0.0.5",
     "leveldown": "^1.7.2",
