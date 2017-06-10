@@ -15,7 +15,7 @@
   "bugs": {
     "url": "https://github.com/eslachance/djs-collection-persistent/issues"
   },
-  "homepage": "https://github.com/eslachance/djs-collection-persistent#readme"
+  "homepage": "https://github.com/eslachance/djs-collection-persistent#readme",
 
   "dependencies": {
     "djs-collection": "0.0.5",
