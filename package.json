@@ -1,6 +1,6 @@
 {
   "name": "djs-collection-persistent",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "Collections stored in persistent database.",
   "main": "index.js",
   "scripts": {
