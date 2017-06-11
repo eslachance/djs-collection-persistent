@@ -71,6 +71,15 @@ class PersistentCollection extends Collection {
     this.db.put(key, val, () => this.inProgress--);
     return super.set(key, val);
   }
+  
+  get(key) {
+    let val = super.get(key);
+    try{
+      return JSON.parse(val);
+    } catch (e) {
+      return val;
+    }
+  }
 
   delete(key, bulk = false) {
     if(!bulk) {
