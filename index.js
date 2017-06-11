@@ -10,8 +10,12 @@ const EventEmitter = require("events").EventEmitter;
  */
 class PersistentCollection extends Collection {
 
-  constructor(options = {}) {
-    super();
+  constructor(iterable, options = {}) {
+    if (typeof iterable[Symbol.iterator] !== 'function') {
+        options = iterable || {};
+        iterable = null;
+    }
+    super(iterable);
     if (!options.name) throw new Error("Must provide a name for the collection.");
 
     this.ready = false;
@@ -37,7 +41,12 @@ class PersistentCollection extends Collection {
     stream.on('data', key => {
       this.db.get(key, (err, value) => {
         if(err) console.log(err);
-        this.set(key, JSON.parse(value));
+        try{
+          this.set(key, JSON.parse(value));
+        } catch(e) {
+          this.set(key, value);
+        }
+        
       });
     });
     stream.on('end', () => {
@@ -54,7 +63,8 @@ class PersistentCollection extends Collection {
     if(!key || !["String", "Number"].includes(key.constructor.name)) 
       throw new Error("Persistent Collections require keys to be strings or numbers.");
     this.inProgress++;
-    this.db.put(key, JSON.stringify(val), () => this.inProgress--);
+    val = (typeof val === "object" ? JSON.stringify(val) : val);
+    this.db.put(key, val, () => this.inProgress--);
     return super.set(key, val);
   }
 
@@ -78,7 +88,7 @@ class PersistentCollection extends Collection {
   purge() {
     return new Promise((resolve, reject) => {
       this.db.close(err=> {
-        if(err) console.log(err);
+        if(err) return reject(err);
         leveldown.destroy(this.path, (err) => {
           if(err) return reject(err);
           resolve();
