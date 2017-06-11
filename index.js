@@ -55,6 +55,10 @@ class PersistentCollection extends Collection {
     });
   }
   
+  close() {
+    this.db.close();
+  }
+  
   _validateName() {
     this.name = this.name.replace(/[^a-z0-9]/gi, '_').toLowerCase();
   }
