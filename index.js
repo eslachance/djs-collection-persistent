@@ -3,7 +3,6 @@ const levelup = require('levelup');
 const leveldown = require('leveldown');
 const path = require("path");
 const EventEmitter = require("events").EventEmitter;
-const util = require("util");
 
 /**
  * A persistent, disk-saved version of the Discord.js' Collections data structure.
@@ -17,6 +16,7 @@ class PersistentCollection extends Collection {
 
     this.ready = false;
     this.event = new EventEmitter();
+    this.inProgress = 0;
     this.name = options.name;
     //todo: check for "unique" option for the DB name and exit if exists
     this._validateName();
@@ -53,19 +53,23 @@ class PersistentCollection extends Collection {
   set(key, val) {
     if(!key || !["String", "Number"].includes(key.constructor.name)) 
       throw new Error("Persistent Collections require keys to be strings or numbers.");
-    this.db.put(key, JSON.stringify(val));
+    this.inProgress++;
+    this.db.put(key, JSON.stringify(val), () => this.inProgress--);
     return super.set(key, val);
   }
 
   delete(key, bulk = false) {
-    if(bulk) this.db.del(key);
+    if(!bulk) {
+      this.inProgress++;
+      this.db.del(key, () => this.inProgress--);
+    }
     return super.delete(key);
   }
   
   deleteAll() {
     const returns = [];
     for (const key of this.keys()) {
-      returns.push(this.delete(key));
+      returns.push(this.delete(key, true));
     }
     returns.push(this.purge());
     return returns;
@@ -79,8 +83,13 @@ class PersistentCollection extends Collection {
           if(err) return reject(err);
           resolve();
         });
-      })
+      });
     });
+  }
+  
+  waitUntil(condition, callback) {
+    if(condition) callback();
+    else setTimeout(this.waitUntil(condition,callback),50);
   }
 }
 

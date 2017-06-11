@@ -1,25 +1,29 @@
 const PersistentCollection = require("./index");
 const myColl = new PersistentCollection({name: "test"});
 
-console.time("1MillionInserts");
-console.time("1MillionInsertsReady");
-for(let i = 0; i<100000;i++) {
-  myColl.set(`test${i}`, {testValue: "This is a test Value"});
-}
-console.timeEnd("1MillionInserts");
-myColl.event.on("ready", () =>{
-  console.timeEnd("1MillionInsertsReady");
+myColl.waitUntil(()=>this.ready, ()=>{
   
+  console.time("100kInserts");
+  for(let i = 0; i<100000;i++) {
+    myColl.set(`test${i}`, {testValue: "This is a test Value"});
+  }
+  console.timeEnd("100kInserts");
   
-  console.time("10ThousandRandoms");
-  myColl.randomKey(10000);
-  console.timeEnd("10ThousandRandoms");
+  myColl.waitUntil(
+    () => myColl.inProgress = 0,
+    () => {
+      console.time("10kRandoms");
+      myColl.randomKey(10000);
+      console.timeEnd("10kRandoms");
+      
+      
+      console.time("DeleteAll");
+      const arrPromises = myColl.deleteAll();
+      Promise.all(arrPromises).then(() => {
+        console.timeEnd("DeleteAll");
+      });
+    });
   
-  console.time("DeleteAll");
-  const arrPromises = myColl.deleteAll();
-  Promise.all(arrPromises).then(() => {
-    console.timeEnd("DeleteAll");
-  });  
   
 });
 
