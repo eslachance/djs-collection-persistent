@@ -1,6 +1,9 @@
 const Collection = require("djs-collection");
 const levelup = require('levelup');
+const leveldown = require('leveldown');
 const path = require("path");
+const EventEmitter = require("events").EventEmitter;
+const util = require("util");
 
 /**
  * A persistent, disk-saved version of the Discord.js' Collections data structure.
@@ -11,8 +14,9 @@ class PersistentCollection extends Collection {
   constructor(options = {}) {
     super();
     if (!options.name) throw new Error("Must provide a name for the collection.");
-    
+
     this.ready = false;
+    this.event = new EventEmitter();
     this.name = options.name;
     //todo: check for "unique" option for the DB name and exit if exists
     this._validateName();
@@ -24,7 +28,6 @@ class PersistentCollection extends Collection {
       }
     }
     this.path = path.join(process.cwd(), this.dataDir, this.name);
-    console.log(this.path);
     this.db = levelup(this.path);
     this.init();
   }
@@ -37,7 +40,10 @@ class PersistentCollection extends Collection {
         this.set(key, JSON.parse(value));
       });
     });
-    stream.on('end', () => this.ready = true);
+    stream.on('end', () => {
+      this.event.emit("ready");
+      this.ready = true;
+    });
   }
   
   _validateName() {
@@ -45,8 +51,8 @@ class PersistentCollection extends Collection {
   }
   
   set(key, val) {
-    if(!key || key.constructor.name !== "String") 
-      throw new Error("Persistent Collections require keys to be strings.");
+    if(!key || !["String", "Number"].includes(key.constructor.name)) 
+      throw new Error("Persistent Collections require keys to be strings or numbers.");
     this.db.put(key, JSON.stringify(val));
     return super.set(key, val);
   }
@@ -56,24 +62,24 @@ class PersistentCollection extends Collection {
     return super.delete(key);
   }
   
-  async deleteAll() {
+  deleteAll() {
     const returns = [];
-    const ops = [];
     for (const key of this.keys()) {
       returns.push(this.delete(key));
-      ops.push({type: 'del', key});
     }
-    await this._purge();
+    returns.push(this.purge());
     return returns;
   }
   
-  _purge() {
+  purge() {
     return new Promise((resolve, reject) => {
-      require("levelup").destroy(this.path, (err) => {
-        if(err) return reject(err);
-        this.db = levelup(this.path);
-        resolve();
-      });
+      this.db.close(err=> {
+        if(err) console.log(err);
+        leveldown.destroy(this.path, (err) => {
+          if(err) return reject(err);
+          resolve();
+        });
+      })
     });
   }
 }
