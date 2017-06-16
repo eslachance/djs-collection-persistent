@@ -1,8 +1,7 @@
 const Collection = require("djs-collection");
-const levelup = require('levelup');
-const leveldown = require('leveldown');
+const level = require('level');
 const path = require("path");
-const EventEmitter = require("events").EventEmitter;
+const EventEmitter = require("events");
 
 /**
  * A persistent, disk-saved version of the Discord.js' Collections data structure.
@@ -23,7 +22,7 @@ class PersistentCollection extends Collection {
     this.inProgress = 0;
     this.name = options.name;
     //todo: check for "unique" option for the DB name and exit if exists
-    this._validateName();
+    this.validateName();
     this.dataDir = (options.dataDir || "data");
     if(!options.dataDir) {
       const fs = require("fs");
@@ -32,11 +31,11 @@ class PersistentCollection extends Collection {
       }
     }
     this.path = path.join(process.cwd(), this.dataDir, this.name);
-    this.db = levelup(this.path);
+    this.db = level(this.path);
     this.init();
   }
   
-  init() {
+  static init() {
     const stream = this.db.keyStream();
     stream.on('data', key => {
       this.db.get(key, (err, value) => {
@@ -59,16 +58,15 @@ class PersistentCollection extends Collection {
     this.db.close();
   }
   
-  _validateName() {
+  static validateName() {
     this.name = this.name.replace(/[^a-z0-9]/gi, '_').toLowerCase();
   }
   
   set(key, val) {
     if(!key || !["String", "Number"].includes(key.constructor.name)) 
       throw new Error("Persistent Collections require keys to be strings or numbers.");
-    this.inProgress++;
     val = (typeof val === "object" ? JSON.stringify(val) : val);
-    this.db.put(key, val, () => this.inProgress--);
+    this.db.put(key, val);
     return super.set(key, val);
   }
   
@@ -83,8 +81,7 @@ class PersistentCollection extends Collection {
 
   delete(key, bulk = false) {
     if(!bulk) {
-      this.inProgress++;
-      this.db.del(key, () => this.inProgress--);
+      this.db.del(key);
     }
     return super.delete(key);
   }
@@ -102,7 +99,7 @@ class PersistentCollection extends Collection {
     return new Promise((resolve, reject) => {
       this.db.close(err=> {
         if(err) return reject(err);
-        leveldown.destroy(this.path, (err) => {
+        level.destroy(this.path, (err) => {
           if(err) return reject(err);
           resolve();
         });
