@@ -35,7 +35,7 @@ class PersistentCollection extends Collection {
     this.init();
   }
   
-  static init() {
+  init() {
     const stream = this.db.keyStream();
     stream.on('data', key => {
       this.db.get(key, (err, value) => {
@@ -58,7 +58,7 @@ class PersistentCollection extends Collection {
     this.db.close();
   }
   
-  static validateName() {
+  validateName() {
     this.name = this.name.replace(/[^a-z0-9]/gi, '_').toLowerCase();
   }
   
