@@ -1,7 +1,6 @@
 const Collection = require("djs-collection");
 const level = require('level');
 const path = require("path");
-const EventEmitter = require("events");
 
 /**
  * A persistent, disk-saved version of the Discord.js' Collections data structure.
@@ -17,8 +16,7 @@ class PersistentCollection extends Collection {
     super(iterable);
     if (!options.name) throw new Error("Must provide a name for the collection.");
 
-    this.ready = false;
-    this.event = new EventEmitter();
+    this.defer = new Promise(resolve => this.ready = resolve);
     this.inProgress = 0;
     this.name = options.name;
     //todo: check for "unique" option for the DB name and exit if exists
@@ -49,8 +47,7 @@ class PersistentCollection extends Collection {
       });
     });
     stream.on('end', () => {
-      this.event.emit("ready");
-      this.ready = true;
+      this.ready();
     });
   }
   
@@ -105,11 +102,6 @@ class PersistentCollection extends Collection {
         });
       });
     });
-  }
-  
-  waitUntil(condition, callback) {
-    if(condition) callback();
-    else setTimeout(this.waitUntil(condition,callback),50);
   }
 }
 
