@@ -7,7 +7,17 @@ const path = require("path");
  * @extends {Collection}
  */
 class PersistentCollection extends Collection {
+  /**
+   * @typedef PersistentCollectionOptions
+   * @property {string} name - Unique database name
+   * @property {string} [dataDir="./data"] - Directory where data is stored
+   */
 
+  /**
+   * Creates a new Collection that saves its data to a file.
+   * @param {*} [iterable] - Iterable Object to initialize Collection from
+   * @param {PersistentCollectionOptions} options - Options for database name and location
+   */
   constructor(iterable, options = {}) {
     if (typeof iterable[Symbol.iterator] !== 'function') {
         options = iterable || {};
@@ -51,6 +61,9 @@ class PersistentCollection extends Collection {
     });
   }
   
+  /**
+   * Closes database cleanly ensuring data is saved.
+   */
   close() {
     this.db.close();
   }
