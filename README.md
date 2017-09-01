@@ -51,6 +51,12 @@ myCollection.set("myKey", "a value");
 let result = myCollection.get("myKey");
 ```
 
+Optionally - Choose the directory in which a PersistentCollection stores data:
+
+```js
+const myCollection = new PersistentCollection({name: 'myCollection', dataDir: './user_info/'});
+```
+
 Some important notes: 
 - If the collection `name` already exists, *its keys and values loaded in memory*.
 - If it does not exist, it is initialized (with no values).
