@@ -75,8 +75,8 @@ class PersistentCollection extends Collection {
   set(key, val) {
     if(!key || !["String", "Number"].includes(key.constructor.name)) 
       throw new Error("Persistent Collections require keys to be strings or numbers.");
-    val = (typeof val === "object" ? JSON.stringify(val) : val);
-    this.db.put(key, val);
+    const insert = (typeof val === "object" ? JSON.stringify(val) : val);
+    this.db.put(key, insert);
     return super.set(key, val);
   }
   
