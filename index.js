@@ -19,6 +19,7 @@ class PersistentCollection extends Collection {
    * @param {PersistentCollectionOptions} options - Options for database name and location
    */
   constructor(iterable, options = {}) {
+    console.log('DeprecationWarning: djs-collection-persistent is no longer maintained. Please migrate to enmap (available on npm).')
     if (typeof iterable[Symbol.iterator] !== 'function') {
         options = iterable || {};
         iterable = null;
